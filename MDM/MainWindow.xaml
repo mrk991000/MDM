@@ -1,0 +1,427 @@
+﻿<Window x:Class="MDM.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:tb="http://www.hardcodet.net/taskbar"
+        xmlns:osc="clr-namespace:OpenSourceControls"
+        xmlns:local="clr-namespace:MDM"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        mc:Ignorable="d"
+        Height="600" Width="920"
+        WindowStyle="None"
+        ResizeMode="NoResize"
+        Background="Transparent"
+        KeyDown="mainWindow_KeyDown"
+        Closing="mainWindow_Closing"
+        StateChanged="mainWindow_StateChanged"
+        ContentRendered="mainWindow_ContentRendered"
+        Title="Modern Download Manager"
+        Icon="/Resources/icon.ico"
+        x:Name="mainWindow"
+        AllowsTransparency="True" MinWidth="800" MinHeight="300" WindowStartupLocation="CenterScreen">
+
+    
+    <Window.Resources>
+        <Style x:Key="MyWaterMarkStyle" TargetType="{x:Type TextBox}">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TextBox}">
+                        <Grid>
+                            <Border Background="Transparent" CornerRadius="10" BorderBrush="White" BorderThickness="2"/>
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="5,0,0,0" VerticalAlignment="Center" />
+                            <Label Margin="5,0,0,0" x:Name="WaterMarkLabel" Content="{TemplateBinding Tag}" VerticalAlignment="Center"
+                               Visibility="Collapsed" Foreground="Gray" FontFamily="Arial"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="Text" Value=""/>
+                                </MultiTrigger.Conditions>
+                                <Setter Property="Visibility" TargetName="WaterMarkLabel" Value="Visible"/>
+                            </MultiTrigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="DimGray"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="RightHeaderStyle" TargetType="DataGridColumnHeader">
+            <Setter Property="HorizontalContentAlignment" Value="Right"/>
+            <Setter Property="Background" Value="#2f2f2f" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="BorderBrush" Value="White"/>
+            <Setter Property="Padding" Value="0,0,10,0" />
+            <Setter Property="BorderThickness" Value="0.6"/>
+
+        </Style>
+        <Style x:Key="CenterHeaderStyle" TargetType="DataGridColumnHeader">
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="BorderBrush" Value="White"/>
+            <Setter Property="BorderThickness" Value="0.6"/>
+            <Setter Property="Background" Value="#2f2f2f" />
+            <Setter Property="Foreground" Value="White" />
+
+
+        </Style>
+        <Style x:Key="LeftHeaderStyle" TargetType="DataGridColumnHeader">
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Background" Value="#2f2f2f" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Padding" Value="10,0,0,0" />
+            
+            <Setter Property="BorderBrush" Value="White"/>
+            <Setter Property="BorderThickness" Value="0.6"/>
+        </Style>
+        <Style x:Key="LeftCellStyle" TargetType="DataGridCell">
+
+            <Style.Setters>
+
+                <Setter Property="TextBlock.TextAlignment" Value="Left" />
+                <Setter Property="Template">
+
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type DataGridCell}">
+                            <Grid Background="{TemplateBinding Background}">
+                                <ContentPresenter VerticalAlignment="Center" Margin="10,0"/>
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="BorderThickness" Value="10" />
+
+                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            </Style.Setters>
+        </Style>
+        <Style x:Key="LeftCellSelectionDisabledStyle" TargetType="{x:Type DataGridCell}">
+            <Style.Setters>
+                <Setter Property="TextBlock.TextAlignment" Value="Left" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type DataGridCell}">
+                            <Grid Background="{TemplateBinding Background}">
+                                <ContentPresenter VerticalAlignment="Center" />
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="Foreground" Value="#2f2f2f" />
+                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            </Style.Setters>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{x:Null}" />
+                    <Setter Property="BorderBrush" Value="{x:Null}" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="RightCellStyle" TargetType="DataGridCell">
+            <Style.Setters>
+                <Setter Property="TextBlock.TextAlignment" Value="Right" />
+
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type DataGridCell}">
+                            <Grid Background="{TemplateBinding Background}">
+                                <ContentPresenter VerticalAlignment="Center" />
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="BorderThickness" Value="0" />
+
+                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            </Style.Setters>
+        </Style>
+        <Style x:Key="CenterCellStyle" TargetType="DataGridCell">
+            <Style.Setters>
+                <Setter Property="TextBlock.TextAlignment" Value="Center" />
+
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type DataGridCell}">
+                            <Grid Background="{TemplateBinding Background}">
+                                <ContentPresenter VerticalAlignment="Center" />
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="BorderThickness" Value="0" />
+
+                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            </Style.Setters>
+        </Style>
+    </Window.Resources>
+
+    
+
+    <Border Background="#2f2f2f" CornerRadius="20">
+
+        <Grid>
+            
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="50"/>
+                <RowDefinition Height="75"/>
+                <RowDefinition/>
+                <RowDefinition Height="35"/>
+            </Grid.RowDefinitions>
+          
+            <Border Background="#252525" Grid.ColumnSpan="2" CornerRadius="20,20,0,0" MouseDown="Border_MouseDown">
+                <Grid HorizontalAlignment="Stretch">
+                    
+                    <TextBlock HorizontalAlignment="Left" Foreground="White"         
+                    FontSize="20"
+                    Margin="15,0,0,0"
+                    FontFamily="/Fonts/#Poppins" 
+                    VerticalAlignment="Center" Grid.Row="0" Text="Modern Download Manager"/>
+
+                    <StackPanel Margin="0,0,15,0" HorizontalAlignment="Right" Orientation="Horizontal">
+                        <Button Width="30" Height="30" FontSize="20" Content="🗕" Padding="0,-15,0,0" Background="Transparent" Foreground="White" BorderThickness="0" Click="Minimize_Click" ToolTip="Minimize"/>
+                        <Button Width="30" Height="30" FontSize="20" Content="⌄" Padding="0,-7,0,0" Background="Transparent" Foreground="White" BorderThickness="0" Click="MinimizeToTray_Click" ToolTip="Minimize To Tray"/>
+                        <Button Width="30" Height="30" FontSize="20" Content="✕" Padding="0" Background="Transparent" Foreground="White" BorderThickness="0" Click="Close_Click" ToolTip="Close"/>
+                    </StackPanel>
+                    
+                </Grid>
+            </Border>
+    
+
+            <Border VerticalAlignment="Bottom" Height="1" Background="#252525" Grid.Row="1" Grid.ColumnSpan="2"/>
+            <Border HorizontalAlignment="Right" Width="1" Background="#252525" Grid.Row="2" Grid.Column="0" Grid.RowSpan="3"/>
+
+            <StackPanel Grid.Row="2">
+                <RadioButton Content="All"
+                             Height="50"
+                             Foreground="White"
+                             Click="allClick"
+                             Style="{StaticResource MenuButtonTheme}"
+                             IsChecked="True"
+/>
+                <RadioButton Content="In Progress"
+                             Click="inProgressClick"
+             Height="50"
+             Foreground="White"
+             Style="{StaticResource MenuButtonTheme}"/>
+
+                
+                <RadioButton Content="Stopped"
+                             Click="stoppedClick"
+                Height="50"
+                Foreground="White"
+
+                Style="{StaticResource MenuButtonTheme}"/>
+
+                <RadioButton Content="Downloaded"
+                                Height="50"
+                                Foreground="White"
+                                Click="downloadedClick"
+                                Style="{StaticResource MenuButtonTheme}"/>
+
+
+                <RadioButton Content="Failed"
+                                Height="50"
+                                Foreground="White"
+Click="failedClick"
+                                Style="{StaticResource MenuButtonTheme}"/>
+
+            </StackPanel>
+
+            <StackPanel 
+                Margin="10,0,0,0"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                Grid.Row="1"
+                Height="85"
+                HorizontalAlignment="left"
+                Orientation="Horizontal">
+
+                <Button Height="80" Click="addNewMI_Click" FontSize="15" BorderThickness="0" Background="Transparent" Grid.Column="1" Grid.Row="1" VerticalAlignment="Center" Margin="0,0,0,0">
+
+                    <StackPanel>
+                        <Image Height="25" Width="25" Source="/Resources/plus.png"/>
+
+                        <TextBlock Padding="0,8" Text="Add New" HorizontalAlignment="Center" FontFamily="/Fonts/#Poppins" Foreground="White"/>
+                    </StackPanel>
+                </Button>
+                <Button Height="80" x:Name="btnStart" Click="btnStart_Click" FontSize="15" BorderThickness="0" Background="Transparent" Grid.Column="1" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,0,0">
+
+                    <StackPanel>
+                        <Image Height="25" Width="25" Source="/Resources/play.png"/>
+
+                        <TextBlock Padding="0,8" Text="Start" HorizontalAlignment="Center" FontFamily="/Fonts/#Poppins" Foreground="White"/>
+                    </StackPanel>
+                </Button>
+                <Button Height="80" x:Name="btnPause" Click="btnPause_Click" FontSize="15" BorderThickness="0" Background="Transparent"  Grid.Column="1" Grid.Row="1" VerticalAlignment="Center" Margin="0,0,0,0">
+
+                    <StackPanel>
+                        <Image Height="25" Width="25" Source="/Resources/stop.png"/>
+
+                        <TextBlock Padding="0,8" Text="Stop"  FontFamily="/Fonts/#Poppins" Foreground="White"/>
+                    </StackPanel>
+                </Button>
+                <Button Height="80" x:Name="btnRestart" Click="cmRestart_Click" FontSize="15" BorderThickness="0" Background="Transparent"  Grid.Column="1" Grid.Row="1" VerticalAlignment="Center" Margin="0,0,0,0">
+
+                    <StackPanel>
+                        <Image Height="25" Width="25" Source="/Resources/restart.png"/>
+
+                        <TextBlock Padding="0,8" Text="Restart" FontFamily="/Fonts/#Poppins" Foreground="White"/>
+                    </StackPanel>
+                </Button>
+
+                <Button Height="80" Click="cmStartAll_Click" x:Name="btnStartAll" FontSize="15" BorderThickness="0" Background="Transparent" Grid.Column="1" Grid.Row="1" VerticalAlignment="Center" Margin="0,0,0,0">
+
+                    <StackPanel>
+                        <Image Height="25" Width="25" Source="/Resources/play.png"/>
+                        <TextBlock Padding="0,8" Text="Start All"  FontFamily="/Fonts/#Poppins" Foreground="White"/>
+                    </StackPanel>
+                </Button>
+                <Button Height="80" Click="cmPauseAll_Click" x:Name="btnPauseAll" FontSize="15" BorderThickness="0" Background="Transparent" Grid.Column="1" Grid.Row="1" VerticalAlignment="Center" Margin="0,0,0,0">
+
+                    <StackPanel>
+                        <Image Height="25" Width="25" Source="/Resources/stop.png"/>
+                        <TextBlock Padding="0,8" Text="Stop All"  FontFamily="/Fonts/#Poppins" Foreground="White"/>
+                    </StackPanel>
+                </Button>
+
+                <Button Height="80" x:Name="btnDelete" Click="btnDelete_Click" FontSize="15" BorderThickness="0" Background="Transparent" Grid.Column="1" Grid.Row="1" VerticalAlignment="Center" Margin="0,0,0,0">
+
+                    <StackPanel>
+                        <Image Height="25" Width="25" Source="/Resources/delete.png"/>
+                        <TextBlock Padding="0,8" Text="Delete"  FontFamily="/Fonts/#Poppins" Foreground="White"/>
+                    </StackPanel>
+                </Button>
+                <Button Visibility="Hidden" Height="100" Click="btnClearCompleted_Click" x:Name="btnClearCompleted" FontSize="15" BorderThickness="0" Background="Transparent" Grid.Column="1" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,0,0">
+
+                    <StackPanel>
+                        <Image Height="25" Width="25" Source="/Resources/clear.png"/>
+                        <TextBlock Padding="0,8" Text="Clear Done" FontFamily="/Fonts/#Poppins" Foreground="White"/>
+                    </StackPanel>
+                </Button>
+
+
+            </StackPanel>
+
+            <TextBox
+                Width="180"
+                TextChanged="TextBox_TextChanged"
+                     Grid.Column="1"
+                Style="{StaticResource MyWaterMarkStyle}"
+                Tag="Search"
+                     Grid.Row="1"
+                     Height="35"
+                     VerticalContentAlignment="Center"
+                     HorizontalAlignment="Right"
+                     Margin="5,5,50,5"
+                     Foreground="White"
+                     />
+            
+
+            <materialDesign:PopupBox PopupUniformCornerRadius="10" PopupVerticalOffset="30" Grid.Column="1" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,10,0" Foreground="White"  ToolTip="Menu" PlacementMode="BottomAndAlignRightEdges" StaysOpen="False">
+
+                <StackPanel Width="200">
+                    <Button FontFamily="/Fonts/#Poppins" FontSize="14" Content="Settings" Click="settings_Click"/>
+                    <Button FontFamily="/Fonts/#Poppins" FontSize="14" Content="About" Click="about_Click"/>
+                    <Separator/>
+                    <Button FontFamily="/Fonts/#Poppins" FontSize="14" Content="Exit" Click="Close_Click"/>
+                </StackPanel>
+
+            </materialDesign:PopupBox>
+
+
+
+
+
+            <ContentControl Grid.Row="2"
+                            Grid.Column="1">
+                <DockPanel Name="dockPanel" Background="#2f2f2f">
+                    <tb:TaskbarIcon x:Name="XNotifyIcon"  TrayLeftMouseUp="Maximize_Click"/>
+
+                    <DockPanel DockPanel.Dock="Top" Name="downloadsPanel" Background="#2f2f2f">
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto" Background="#2f2f2f" VerticalScrollBarVisibility="Auto" Name="dgScrollViewer">
+                            <DataGrid AutoGenerateColumns="False" Name="downloadsGrid" VerticalContentAlignment="Center" DockPanel.Dock="Top" 
+                        BorderThickness="0" IsReadOnly="True" GridLinesVisibility="None" MinRowHeight="30"
+                        MouseDoubleClick="cmOpenFile_Click" SelectionChanged="downloadsGrid_SelectionChanged" PreviewMouseWheel="downloadsGrid_PreviewMouseWheel" 
+                        Background="#252525" HorizontalGridLinesBrush="#FFCBCBCB" VerticalGridLinesBrush="#FFCBCBCB" KeyUp="downloadsGrid_KeyUp" 
+                        ContextMenuOpening="downloadsGrid_ContextMenuOpening" CanUserResizeRows="False">
+                                <DataGrid.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Header="Start" Name="cmStart" Click="btnStart_Click"  />
+                                        <MenuItem Header="Pause" Name="cmPause" Click="btnPause_Click" />
+                                        <Separator />
+                                        <MenuItem Header="Delete" Name="cmDelete" Click="btnDelete_Click" />
+                                        <MenuItem Header="Restart" Name="cmRestart" Click="cmRestart_Click"  />
+                                        <Separator />
+                                        <MenuItem Header="Open File" Name="cmOpenFile" Click="cmOpenFile_Click" />
+                                        <MenuItem Header="Open Download Folder" Name="cmOpenDownloadFolder" Click="cmOpenDownloadFolder_Click" />
+                                        <Separator />
+                                        <MenuItem Header="Start All" Name="cmStartAll" Click="cmStartAll_Click" />
+                                        <MenuItem Header="Pause All" Name="cmPauseAll" Click="cmPauseAll_Click" />
+                                        <MenuItem Header="Select All" Name="cmSelectAll" Click="cmSelectAll_Click" />
+                                        <Separator />
+                                        <MenuItem Header="Copy URL to Clipboard" Name="cmCopyURLtoClipboard" Click="cmCopyURLtoClipboard_Click" />
+                                        <MenuItem Header="Properties" Name="cmProperties" Click="cmProperties_Click" />
+
+                                    </ContextMenu>
+                                </DataGrid.ContextMenu>
+                                <DataGrid.CellStyle>
+                                    <Style TargetType="DataGridCell">
+                                        <Setter Property="BorderThickness" Value="0"/>
+                                    </Style>
+                                </DataGrid.CellStyle>
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="File Name" HeaderStyle="{StaticResource LeftHeaderStyle}" CellStyle="{StaticResource LeftCellStyle}" MinWidth="150" Width="150" x:Name="tcFileName" Binding="{Binding FileName, Mode=OneWay}" />
+                                    <DataGridTextColumn Header="Size" HeaderStyle="{StaticResource RightHeaderStyle}" CellStyle="{StaticResource RightCellStyle}" MinWidth="80" Width="80" x:Name="tcSize" Binding="{Binding FileSizeString, Mode=OneWay}" />
+                                    <DataGridTextColumn Header="Downloaded" HeaderStyle="{StaticResource RightHeaderStyle}" CellStyle="{StaticResource RightCellStyle}" MinWidth="90" Width="90" x:Name="tcDownloaded" Binding="{Binding DownloadedSizeString, Mode=OneWay}" />
+                                    <DataGridTextColumn Header="Percent" HeaderStyle="{StaticResource RightHeaderStyle}" CellStyle="{StaticResource RightCellStyle}" MinWidth="60" Width="60" x:Name="tcPercent" Binding="{Binding PercentString, Mode=OneWay}" />
+                                    <DataGridTemplateColumn Header="Progress" HeaderStyle="{StaticResource CenterHeaderStyle}" CellStyle="{StaticResource CenterCellStyle}" MinWidth="130" Width="130" x:Name="tcProgress">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ProgressBar Name="progressBar" Foreground="LimeGreen" Background="White" BorderThickness="0" Margin="5,0,5,0" Value="{Binding Progress, Mode=OneWay}" VerticalAlignment="Center" Height="15" MinHeight="15" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTextColumn Header="Speed" HeaderStyle="{StaticResource RightHeaderStyle}" CellStyle="{StaticResource RightCellStyle}" MinWidth="85" Width="85" x:Name="tcSpeed" Binding="{Binding DownloadSpeed, Mode=OneWay}" />
+                                    <DataGridTextColumn Header="Time Left" HeaderStyle="{StaticResource RightHeaderStyle}" CellStyle="{StaticResource RightCellStyle}" MinWidth="70" Width="70" x:Name="tcTimeLeft" Binding="{Binding TimeLeft, Mode=OneWay}" />
+                                    <DataGridTextColumn Header="Status" HeaderStyle="{StaticResource CenterHeaderStyle}" CellStyle="{StaticResource LeftCellStyle}" MinWidth="95" Width="95" x:Name="tcStatus" Binding="{Binding StatusString, Mode=OneWay}" />
+                                    <DataGridTextColumn Header="Added On" HeaderStyle="{StaticResource CenterHeaderStyle}" CellStyle="{StaticResource CenterCellStyle}" MinWidth="130" Width="130" x:Name="tcAddedOn" Binding="{Binding AddedOnString, Mode=OneWay}" />
+                                    <DataGridTextColumn Header="Completed On" HeaderStyle="{StaticResource CenterHeaderStyle}" CellStyle="{StaticResource CenterCellStyle}" MinWidth="130" Width="130" x:Name="tcCompletedOn" Binding="{Binding CompletedOnString, Mode=OneWay}" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </ScrollViewer>
+                    </DockPanel>
+                </DockPanel>
+            </ContentControl>
+
+
+            <Border Background="#252525" Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" CornerRadius="0,0,20,20">
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <TextBlock  x:Name="downloadsText" d:Text="Downloads" FontFamily="/Fonts/#Poppins" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="White" Margin="0,0,50,0"/>
+
+                    <TextBlock x:Name="speedText" d:Text="Speed" FontFamily="/Fonts/#Poppins" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="White" Margin="0,0,50,0"/>
+
+                    <TextBlock x:Name="allPercentText" d:Text="50%" FontFamily="/Fonts/#Poppins" HorizontalAlignment="Right" VerticalAlignment="Center" Foreground="White" Margin="0,0,10,0"/>
+                    <ProgressBar Visibility="Hidden" Background="White" Foreground="LimeGreen" x:Name="allProgress" Width="100" Height="15" Margin="0,0,20,1" d:Value="50" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                </StackPanel>
+            </Border>
+
+
+
+        </Grid>
+
+
+
+    </Border>
+
+
+
+
+</Window>
