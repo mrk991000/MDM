@@ -1,0 +1,115 @@
+﻿<Window x:Class="MDM.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        xmlns:icon="http://metro.mahapps.com/winfx/xaml/iconpacks"
+        xmlns:local="clr-namespace:MDM"
+        WindowStartupLocation="CenterScreen"
+        Title="Modern Download Manager 0.2" Height="500" MinHeight="500" MinWidth="1000" Width="1000" Icon="/icon.png">
+    <Window.Resources>
+        <local:SizeConverter x:Key="SizeConverter"/>
+        <local:SpeedConverter x:Key="SpeedConverter"/>
+        <local:StatusToEnabledConverter x:Key="StatusToEnabledConverter"/>
+    </Window.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal" Margin="10" Grid.Row="0">
+            <ui:Button Margin="0,5,5,5" Click="AddDownload_Click" Height="37">
+                <StackPanel Orientation="Horizontal">
+                    <icon:PackIconModern Kind="Add" Width="20" Height="20" />
+                    <TextBlock Text=" Add Download" Margin="5,0,0,0"/>
+                </StackPanel>
+            </ui:Button>
+            <TextBox x:Name="urlTextBox" Margin="0,5,5,5" Width="595" />
+            
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Margin="10" Grid.Row="1">
+            
+            <ui:Button Click="PauseSelectedDownloads_Click" Margin="0,5,5,5">
+                <StackPanel Orientation="Horizontal">
+                    <icon:PackIconModern Kind="ControlPause" Width="20" Height="20" />
+                    <TextBlock Text=" Pause" Margin="5,0,0,0"/>
+                </StackPanel>
+            </ui:Button>
+            <ui:Button Click="ResumeSelectedDownloads_Click" Margin="0,5,5,5">
+                <StackPanel Orientation="Horizontal">
+                    <icon:PackIconModern Kind="ControlResume" Width="20" Height="20" />
+                    <TextBlock Text=" Resume" Margin="5,0,0,0"/>
+                </StackPanel>
+            </ui:Button>
+            
+            <ui:Button Click="PauseAllDownloads_Click" Margin="0,5,5,5">
+                <StackPanel Orientation="Horizontal">
+                   <icon:PackIconModern Kind="ControlPause" Width="20" Height="20" />
+                    <TextBlock Text=" Stop All" Margin="5,0,0,0"/>
+                </StackPanel>
+            </ui:Button>
+            <ui:Button Click="ResumeAllDownloads_Click" Margin="0,5,5,5">
+                <StackPanel Orientation="Horizontal">
+                    <icon:PackIconModern Kind="ControlResume" Width="20" Height="20" />
+                    <TextBlock Text=" Resume All" Margin="5,0,0,0"/>
+                </StackPanel>
+            </ui:Button>
+            <ui:Button Click="DeleteSelectedDownloads_Click" Margin="0,5,5,5">
+                <StackPanel Orientation="Horizontal">
+                    <icon:PackIconModern Kind="Delete" Width="20" Height="20" />
+                    <TextBlock Text=" Delete" Margin="5,0,0,0"/>
+                </StackPanel>
+            </ui:Button>
+            <ui:Button Click="ClearList_Click" Margin="0,5,5,5">
+                <StackPanel Orientation="Horizontal">
+                    <icon:PackIconModern Kind="Close" Width="20" Height="20" />
+                    <TextBlock Text=" Clear List" Margin="5,0,0,0"/>
+                </StackPanel>
+            </ui:Button>
+            <ui:Button Click="OpenSettings_Click" Margin="0,5,5,5">
+                <StackPanel Orientation="Horizontal">
+                    <icon:PackIconModern Kind="Settings" Width="20" Height="20" />
+                    <TextBlock Text=" Settings" Margin="5,0,0,0"/>
+                </StackPanel>
+            </ui:Button>
+        </StackPanel>
+
+        <ListView x:Name="downloadListView" MouseDoubleClick="DownloadListView_MouseDoubleClick" Grid.Row="2" Margin="10">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="File Name" Width="150" DisplayMemberBinding="{Binding FileName}"/>
+                    <GridViewColumn Header="Status" Width="100" DisplayMemberBinding="{Binding Status}"/>
+                    <GridViewColumn Header="Progress" Width="120">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <ProgressBar Width="120" Value="{Binding Progress}" Maximum="100" Height="20"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="Size" Width="100" DisplayMemberBinding="{Binding TotalBytesToReceive, Converter={StaticResource SizeConverter}}"/>
+                    <GridViewColumn Header="Downloaded" Width="100" DisplayMemberBinding="{Binding BytesReceived, Converter={StaticResource SizeConverter}}"/>
+                    <GridViewColumn Header="Speed" Width="100" DisplayMemberBinding="{Binding DownloadSpeed, Converter={StaticResource SpeedConverter}}"/>
+                    <GridViewColumn Header="Time Left" Width="100" DisplayMemberBinding="{Binding TimeRemaining, StringFormat={}{0:hh\\:mm\\:ss}}"/>
+                    <GridViewColumn Header="URL" Width="200" DisplayMemberBinding="{Binding Url}"/>
+
+                </GridView>
+            </ListView.View>
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="Height" Value="30"/>
+                    <Setter Property="ContextMenu">
+                        <Setter.Value>
+                            <ContextMenu>
+                                <!-- Use a custom command to open the file -->
+                                 <MenuItem Header="Stop" Command="{Binding PauseCommand}"/>
+                                <MenuItem Header="Resume" Command="{Binding ResumeCommand}"/>
+                                </ContextMenu>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </ListView.ItemContainerStyle>
+        </ListView>
+    </Grid>
+</Window>
