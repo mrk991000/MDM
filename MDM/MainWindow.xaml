@@ -5,20 +5,24 @@
         xmlns:icon="http://metro.mahapps.com/winfx/xaml/iconpacks"
         xmlns:local="clr-namespace:MDM"
         WindowStartupLocation="CenterScreen"
-        Title="Modern Download Manager 0.2" Height="500" MinHeight="500" MinWidth="1000" Width="1000" Icon="/icon.png">
+        Title="Modern Download Manager 0.3" Height="500" MinHeight="500" MinWidth="1000" Width="1000" Icon="/icon.png">
     <Window.Resources>
         <local:SizeConverter x:Key="SizeConverter"/>
         <local:SpeedConverter x:Key="SpeedConverter"/>
         <local:StatusToEnabledConverter x:Key="StatusToEnabledConverter"/>
     </Window.Resources>
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="593*"/>
+            <ColumnDefinition Width="407*"/>
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Orientation="Horizontal" Margin="10" Grid.Row="0">
+        <StackPanel Orientation="Horizontal" Margin="10,10,10,10" Grid.Row="0" Grid.ColumnSpan="2">
             <ui:Button Margin="0,5,5,5" Click="AddDownload_Click" Height="37">
                 <StackPanel Orientation="Horizontal">
                     <icon:PackIconModern Kind="Add" Width="20" Height="20" />
@@ -26,11 +30,11 @@
                 </StackPanel>
             </ui:Button>
             <TextBox x:Name="urlTextBox" Margin="0,5,5,5" Width="595" />
-            
+
         </StackPanel>
 
-        <StackPanel Orientation="Horizontal" Margin="10" Grid.Row="1">
-            
+        <StackPanel Orientation="Horizontal" Margin="10,10,10,10" Grid.Row="1" Grid.ColumnSpan="2">
+
             <ui:Button Click="PauseSelectedDownloads_Click" Margin="0,5,5,5">
                 <StackPanel Orientation="Horizontal">
                     <icon:PackIconModern Kind="ControlPause" Width="20" Height="20" />
@@ -43,10 +47,10 @@
                     <TextBlock Text=" Resume" Margin="5,0,0,0"/>
                 </StackPanel>
             </ui:Button>
-            
+
             <ui:Button Click="PauseAllDownloads_Click" Margin="0,5,5,5">
                 <StackPanel Orientation="Horizontal">
-                   <icon:PackIconModern Kind="ControlPause" Width="20" Height="20" />
+                    <icon:PackIconModern Kind="ControlPause" Width="20" Height="20" />
                     <TextBlock Text=" Stop All" Margin="5,0,0,0"/>
                 </StackPanel>
             </ui:Button>
@@ -76,7 +80,7 @@
             </ui:Button>
         </StackPanel>
 
-        <ListView x:Name="downloadListView" MouseDoubleClick="DownloadListView_MouseDoubleClick" Grid.Row="2" Margin="10">
+        <ListView x:Name="downloadListView" MouseDoubleClick="DownloadListView_MouseDoubleClick" Grid.Row="2" Margin="10,10,10,10" Grid.ColumnSpan="2">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="File Name" Width="150" DisplayMemberBinding="{Binding FileName}"/>
@@ -103,9 +107,9 @@
                         <Setter.Value>
                             <ContextMenu>
                                 <!-- Use a custom command to open the file -->
-                                 <MenuItem Header="Stop" Command="{Binding PauseCommand}"/>
+                                <MenuItem Header="Stop" Command="{Binding PauseCommand}"/>
                                 <MenuItem Header="Resume" Command="{Binding ResumeCommand}"/>
-                                </ContextMenu>
+                            </ContextMenu>
                         </Setter.Value>
                     </Setter>
                 </Style>
