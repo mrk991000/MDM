@@ -85,10 +85,10 @@
                 <GridView>
                     <GridViewColumn Header="File Name" Width="150" DisplayMemberBinding="{Binding FileName}"/>
                     <GridViewColumn Header="Status" Width="100" DisplayMemberBinding="{Binding Status}"/>
-                    <GridViewColumn Header="Progress" Width="120">
+                    <GridViewColumn Header="Progress" Width="150">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <ProgressBar Width="120" Value="{Binding Progress}" Maximum="100" Height="20"/>
+                                <ProgressBar Width="150" Value="{Binding Progress}" Maximum="100" Height="20"/>
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
