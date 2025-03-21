@@ -11,21 +11,28 @@ using System.Windows.Input;
 using System.Globalization;
 using System.Diagnostics;
 using System.Windows.Forms; // For NotifyIcon
-using System.Drawing; // For Icon
+using System.Drawing;
+using System.Net.Http; // For Icon
 
 namespace MDM
 {
     public partial class MainWindow : Window
     {
+
         private ObservableCollection<Download> downloads;
         private DownloadManager downloadManager;
-        private string downloadSubPath; // Changed to store subfolder only
-        private const string SETTINGS_FILE = "settings.json";
-        private const string DOWNLOADS_FILE = "downloads.json";
+        private string downloadSubPath;
+        private int maxSimultaneousDownloads;
+        private static readonly string SETTINGS_FILE = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MDM", "settings.json");
+        private static readonly string DOWNLOADS_FILE = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MDM", "downloads.json");
         private bool deleteFileOnRemove = true;
         private DispatcherTimer clipboardTimer;
         private NotifyIcon trayIcon;
         private bool showDownloadNotifications;
+        private string theme;
+        private string language;
+        private string lastClipboardUrl = ""; // To avoid repeated pasting
+        private static readonly HttpClient httpClient = new HttpClient(); // Shared HttpClient instance
 
         public ICommand DeleteSelectedDownloadsCommand { get; }
         public ICommand CopyUrlCommand { get; }
@@ -40,9 +47,16 @@ namespace MDM
             InitializeComponent();
             DataContext = this;
 
+            string appDataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MDM");
+            if (!Directory.Exists(appDataFolder))
+            {
+                Directory.CreateDirectory(appDataFolder);
+            }
+
             clipboardTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
             clipboardTimer.Tick += ClipboardTimer_Tick;
             clipboardTimer.Start();
+
 
             downloads = new ObservableCollection<Download>();
             downloadListView.ItemsSource = downloads;
@@ -99,15 +113,16 @@ namespace MDM
             {
                 download.PropertyChanged += Download_PropertyChanged;
             }
+            httpClient.Timeout = TimeSpan.FromSeconds(5); // Set a reasonable timeout for HEAD requests
         }
 
         private ContextMenuStrip CreateTrayContextMenu()
         {
             var menu = new ContextMenuStrip();
-            menu.Items.Add("Open/Maximize App", null, (s, e) => { Show(); WindowState = WindowState.Normal; });
+            menu.Items.Add("Maximize MDM", null, (s, e) => { Show(); WindowState = WindowState.Normal; });
             menu.Items.Add("Resume All Downloads", null, (s, e) => ResumeAllDownloads_Click(null, null));
-            menu.Items.Add("Stop All Downloads", null, (s, e) => PauseAllDownloads_Click(null, null));
-            menu.Items.Add("Close/Exit App", null, (s, e) => Close());
+            menu.Items.Add("Pause All Downloads", null, (s, e) => PauseAllDownloads_Click(null, null));
+            menu.Items.Add("Exit", null, (s, e) => Close());
             return menu;
         }
 
@@ -125,12 +140,70 @@ namespace MDM
             }
         }
 
-        private void ClipboardTimer_Tick(object sender, EventArgs e)
+        private async void ClipboardTimer_Tick(object sender, EventArgs e)
         {
-            string clipboardText = System.Windows.Clipboard.GetText();
-            if (Uri.IsWellFormedUriString(clipboardText, UriKind.Absolute) && clipboardText.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            string clipboardText = System.Windows.Clipboard.GetText().Trim();
+            if (string.IsNullOrEmpty(clipboardText) || clipboardText == lastClipboardUrl || !Uri.IsWellFormedUriString(clipboardText, UriKind.Absolute) || !clipboardText.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            {
+                return; // Skip if empty, unchanged, invalid, or not HTTP/HTTPS
+            }
+
+            if (await IsDownloadableUrl(clipboardText))
             {
                 urlTextBox.Text = clipboardText;
+                lastClipboardUrl = clipboardText; // Update last URL to prevent repetition
+            }
+        }
+
+        private async Task<bool> IsDownloadableUrl(string url)
+        {
+            try
+            {
+                var request = new HttpRequestMessage(HttpMethod.Head, url);
+                request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"); // Avoid 403 errors from some servers
+
+                HttpResponseMessage response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+                response.EnsureSuccessStatusCode();
+
+                // Check if the response indicates a downloadable file
+                if (response.Content.Headers.ContentDisposition != null && response.Content.Headers.ContentDisposition.DispositionType.Equals("attachment", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true; // Content-Disposition: attachment indicates a download
+                }
+
+                string contentType = response.Content.Headers.ContentType?.MediaType?.ToLower();
+                if (contentType != null && (
+                    contentType.StartsWith("application/") || // e.g., application/octet-stream, application/pdf
+                    contentType.StartsWith("audio/") ||       // e.g., audio/mpeg
+                    contentType.StartsWith("video/") ||       // e.g., video/mp4
+                    contentType.StartsWith("image/") ||       // e.g., image/jpeg (if you consider images downloadable)
+                    contentType == "text/plain"))             // e.g., .txt files
+                {
+                    return true; // Likely a downloadable file
+                }
+
+                // Optionally check file extension if no clear headers
+                string path = new Uri(url).AbsolutePath.ToLower();
+                string[] downloadableExtensions = { ".zip", ".rar", ".exe", ".pdf", ".mp3", ".mp4", ".jpg", ".png", ".txt", ".docx" };
+                if (downloadableExtensions.Any(ext => path.EndsWith(ext)))
+                {
+                    return true;
+                }
+
+                return false; // Default to false if no clear indication
+            }
+            catch (HttpRequestException)
+            {
+                return false; // Network error or invalid response
+            }
+            catch (TaskCanceledException)
+            {
+                return false; // Timeout
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error checking URL {url}: {ex.Message}");
+                return false; // Other unexpected errors
             }
         }
 
@@ -503,6 +576,7 @@ namespace MDM
         protected override void OnClosed(EventArgs e)
         {
             clipboardTimer.Stop();
+            httpClient.Dispose(); // Clean up HttpClient
             base.OnClosed(e);
         }
 

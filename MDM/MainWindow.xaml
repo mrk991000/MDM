@@ -43,7 +43,7 @@
             </ui:Button>
             <ui:Button Click="ResumeSelectedDownloads_Click" Margin="0,5,5,5">
                 <StackPanel Orientation="Horizontal">
-                    <icon:PackIconModern Kind="ControlResume" Width="20" Height="20" />
+                    <icon:PackIconModern Kind="ControlPlay" Width="20" Height="20" />
                     <TextBlock Text=" Resume" Margin="5,0,0,0"/>
                 </StackPanel>
             </ui:Button>
@@ -51,12 +51,12 @@
             <ui:Button Click="PauseAllDownloads_Click" Margin="0,5,5,5">
                 <StackPanel Orientation="Horizontal">
                     <icon:PackIconModern Kind="ControlPause" Width="20" Height="20" />
-                    <TextBlock Text=" Stop All" Margin="5,0,0,0"/>
+                    <TextBlock Text=" Pause All" Margin="5,0,0,0"/>
                 </StackPanel>
             </ui:Button>
             <ui:Button Click="ResumeAllDownloads_Click" Margin="0,5,5,5">
                 <StackPanel Orientation="Horizontal">
-                    <icon:PackIconModern Kind="ControlResume" Width="20" Height="20" />
+                    <icon:PackIconModern Kind="ControlPlay" Width="20" Height="20" />
                     <TextBlock Text=" Resume All" Margin="5,0,0,0"/>
                 </StackPanel>
             </ui:Button>
@@ -107,7 +107,7 @@
                         <Setter.Value>
                             <ContextMenu>
                                 <!-- Use a custom command to open the file -->
-                                <MenuItem Header="Stop" Command="{Binding PauseCommand}"/>
+                                <MenuItem Header="Pause" Command="{Binding PauseCommand}"/>
                                 <MenuItem Header="Resume" Command="{Binding ResumeCommand}"/>
                             </ContextMenu>
                         </Setter.Value>
